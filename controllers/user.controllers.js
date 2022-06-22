@@ -21,7 +21,6 @@ const signup = async (req, res, next) => {
   }
 
   const { userName, password } = req.body;
-
   let existingUser;
   let newUser;
   let saveUser;

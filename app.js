@@ -17,8 +17,8 @@ const notificationRouter = require('./routes/notification.routes');
 const bodyParser = require('body-parser');
 
 
-// const dotenv = require("dotenv")
-// dotenv.config()
+const dotenv = require("dotenv")
+dotenv.config()
 
 const app = express();
 app.use(bodyParser.json());
@@ -78,12 +78,32 @@ app.use((error, req, res, next) => {
   res.json({ message: error.message || "An unknown error occurred!"});
 })
   
+const URL = process.env.MONGO_URL;
 
-const MONGO_URL = `mongodb://localhost:27017/product-management`;
-mongoose.connect(MONGO_URL).then(() => {
+const connectDB = async () => {
+  try {
+    await mongoose.connect(
+      URL,
+      { 
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+      }
+    )
     app.listen(process.env.PORT || 5000);
-}).then(() => {
-    console.log('Connected to db!')
-}).catch(err => {
-    console.log(err);
-});
+    console.log('Connected to mongoDB')
+  } catch (error) {
+    console.log(error)
+    process.exit(1)
+  }
+}
+
+connectDB();
+
+// const MONGO_URL = `mongodb://localhost:27017/product-management`;
+// mongoose.connect(process.env.MONGO_URL).then(() => {
+//     app.listen(process.env.PORT || 5000);
+// }).then(() => {
+//     console.log('Connected to db!')
+// }).catch(err => {
+//     console.log(err);
+// });
