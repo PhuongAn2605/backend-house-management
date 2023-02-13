@@ -66,7 +66,7 @@ const getCommentsByHouseId = async (req, res, next) => {
     houseWithComments = await House.findById(houseId).populate(
       "comments"
     );
-    if (!houseWithComments || houseWithComments.comments.length === 0) {
+    if (!houseWithComments) {
       return next(
         new HttpError("Could not find comments for provided house id", 404)
       );
@@ -77,7 +77,7 @@ const getCommentsByHouseId = async (req, res, next) => {
 
   res.json({
     comments: houseWithComments.comments.map((comment) =>
-      comment.toObject({ getters: true })
+      comment.toObject({ getters: true }) || []
     ),
     message: "Get house successfully!"
   });

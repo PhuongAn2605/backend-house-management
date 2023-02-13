@@ -36,7 +36,7 @@ router.patch(
     check("shortName").not().isEmpty(),
     check("expiration").not().isEmpty(),
     check("location").not().isEmpty(),
-    check("description").not().isEmpty(),
+    // check("description").not().isEmpty(),
     check("functions").not().isEmpty(),
 
     // check('houseId').not().isEmpty(),

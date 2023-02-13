@@ -10,7 +10,7 @@ const productSchema = new Schema(
     expiration: { type: Date, required: true },
     functions: { type: String, required: true },
     location: { type: String, required: true },
-    description: { type: String, required: true },
+    description: { type: String, required: false },
     commentId: {
       type: mongoose.Types.ObjectId,
       ref: "Comment",

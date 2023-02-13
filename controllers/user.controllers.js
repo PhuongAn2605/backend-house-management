@@ -15,7 +15,7 @@ const signup = async (req, res, next) => {
   if (!errors.isEmpty()) {
     console.log(errors);
     return next(
-      res.status(422).send("Invalid inputs passed, please check your data!")
+      res.status(422).json({message: "Invalid inputs passed, please check your data!"})
       // new HttpError("Invalid inputs passed, please check your data!", 422)
     );
   }
@@ -30,12 +30,12 @@ const signup = async (req, res, next) => {
   try {
     existingUserName = await User.findOne({ userName: userName });
     if (!isEmpty(existingUserName)) {
-      return res.status(422).send("User exists already, please login instead");
+      return res.status(422).json({message: "User exists already, please login instead"});
     }
 
     const existingPassword = await User.findOne({ password: password });
     if (!isEmpty(existingPassword)) {
-      return res.status(403).send("Password is taken, please try another password");
+      return res.status(403).json({message: "Password is taken, please try another password"});
     }
 
     if (
@@ -43,23 +43,26 @@ const signup = async (req, res, next) => {
         /^(?=.*?[A-Z])(?=(.*[a-z]){1,})(?=(.*[\d]){1,})(?=(.*[\W]){1,})(?!.*\s).{8,15}$/
       )
     ) {
-      // hashedPassword = await bcrypt.hash(password, 12);
-      // if (isEmpty(hashedPassword)) {
-      //   return next(new HttpError("Could not encrypt the password", 422));
-      // }
+      hashedPassword = await bcrypt.hash(password, 12);
+      if (isEmpty(hashedPassword)) {
+        return next(new HttpError("Could not encrypt the password", 422));
+      }
 
       newUser = new User({
         userName,
-        password: password,
+        // password: password,
+        password: hashedPassword
       });
       saveUser = await newUser.save();
     } else {
-      return res.status(422).send("Wrong password!");
+      return res.status(422).json({message: "Wrong password!"});
       // return next(new HttpError("Wrong password!", 422));
     }
 
     if (isEmpty(saveUser)) {
-      return next(new HttpError("Can not save the user", 500));
+      return res.status(500).json({message: "Can not save the user!"});
+
+      // return next(new HttpError("Can not save the user", 500));
     }
 
     const newHouse = new House({
@@ -71,7 +74,9 @@ const signup = async (req, res, next) => {
 
     const saveHouse = newHouse.save();
     if (isEmpty(saveHouse)) {
-      return next(new HttpError("Can not create a house for the user!", 500));
+      // return next(new HttpError("Can not create a house for the user!", 500));
+      return res.status(500).json({message: "Can not create a house for the user!"});
+
     }
 
     token = jwt.sign(
@@ -82,15 +87,18 @@ const signup = async (req, res, next) => {
       { expiresIn: "1h" }
     );
     if (isEmpty(token)) {
-      return next(new HttpError("Could not set token", 500));
+      return res.status(500).json({message: "Could not set token!"});
+
+      // return next(new HttpError("Could not set token", 500));
     }
   } catch (err) {
     console.log(err);
-    const error = new HttpError("Sign up failed, please try again!", 500);
-    return next(error);
+    // const error = new HttpError("Sign up failed, please try again!", 500);
+    return res.status(500).json({message: "Sign up failed, please try again!"})
+    // return next(error);
   }
 
-  res.status(201).json({ userName: newUser.userName, token: token });
+  res.status(201).json({ userName: newUser.userName, token: token, message: 'Signed you up!' });
 };
 
 const login = async (req, res, next) => {
@@ -98,9 +106,11 @@ const login = async (req, res, next) => {
   let token;
 
   if (!errors.isEmpty()) {
-    return next(
-      new HttpError("Invalid inputs passed, please check your data!", 422)
-    );
+    // return next(
+    //   new HttpError("Invalid inputs passed, please check your data!", 422)
+    // );
+    return res.status(422).json({message: "Invalid inputs passed, please check your data!"})
+
   }
 
   const { userName, password } = req.body;
@@ -115,17 +125,17 @@ const login = async (req, res, next) => {
   try {
     existingUser = await User.findOne({
       userName: userName,
-      password: password,
+      // password: password,
     });
     if (isEmpty(existingUser)) {
-      return res.status(404).send("Could not find the user");
+      return res.status(404).send({message: "Could not find the user"});
     }
 
 
-    // const isValidPassword = await bcrypt.compare(password, existingUser.password);
-    // if(!isValidPassword){
-    //   return res.status(403).send("Invalid credentials, could not log you in.");
-    // }
+    const isValidPassword = await bcrypt.compare(password, existingUser.password);
+    if(!isValidPassword){
+      return res.status(403).send({message: "Invalid credentials, could not log you in."});
+    }
 
     const userId = existingUser._id;
     houseOfUser = await House.findOne({ userId: userId });
@@ -153,7 +163,9 @@ const login = async (req, res, next) => {
     );
   } catch (err) {
     console.log(err);
-    return next(new HttpError("Logging in failed, please try again", 500));
+    // return next(new HttpError("Logging in failed, please try again", 500));
+    return res.status(500).send({message: "Logging in failed, please try again"});
+
   }
 
   res
@@ -171,7 +183,8 @@ const login = async (req, res, next) => {
       products: productsOfHouse,
       houseLikes: houseLikes.houseLikes,
       comments: comments.comments,
-      loginTracker
+      loginTracker,
+      message: 'Logined you in!'
     });
 };
 

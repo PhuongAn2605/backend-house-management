@@ -12,7 +12,7 @@ const getHouses = async (req, res, next) => {
         houses = await House.find({});
         
         if(isEmpty(houses)){
-            return next(new HttpError('NOt found any product', 404));
+            return next(new HttpError('Not found any product', 404));
         }
     }catch(err){
         console.log(err);

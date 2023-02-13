@@ -137,7 +137,7 @@ const editProduct = async (req, res, next) => {
   if(!isEmpty(req.file)){
     imagePath = req.file.path;
   }else{
-    imagePath = req.body;
+    imagePath = req.body.image;
   }
 
   const productId = req.params.pid;
@@ -158,7 +158,13 @@ const editProduct = async (req, res, next) => {
     product.functions = functions;
     product.description = description;
     product.image = imagePath;
-    const saveProduct = await product.save();
+let saveProduct;
+    try {
+       saveProduct = await product.save();
+
+    }catch(err){
+    }
+
 
     if (isEmpty(saveProduct)) {
       return next(new HttpError("Could not save updated product", 500));
@@ -186,15 +192,19 @@ const deleteProduct = async (req, res, next) => {
     imagePath = product.image;
     const deleteProduct = await product.remove();
     if (isEmpty(deleteProduct)) {
-      return next(new HttpError("Could not delete the product", 500));
+      // return next(new HttpError("Could not delete the product", 500));
+      return res.status(500).json({ message: "Could not delete the product!"});
+
     }
 
     product.houseId.products.pull(product);
     await product.houseId.save();
   } catch (err) {
-    return next(
-      new HttpError("Something went wrong, could not delete the product", 500)
-    );
+    // return next(
+      // new HttpError("Something went wrong, could not delete the product", 500)
+    // );
+    return res.status(500).json({ message: "Something went wrong, could not delete the product!"});
+
   }
   fs.unlink(imagePath, err => {
     console.log(err);

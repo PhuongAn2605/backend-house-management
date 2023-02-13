@@ -32,7 +32,7 @@ app.use((req, res, next) => {
       "Access-Control-Allow-Headers",
       "Origin, X-Requested-With, Content-Type, Accept, Authorization"
     );
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, PUT");
   
     next();
   });
@@ -80,30 +80,31 @@ app.use((error, req, res, next) => {
   
 const URL = process.env.MONGO_URL;
 
-const connectDB = async () => {
-  try {
-    await mongoose.connect(
-      URL,
-      { 
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      }
-    )
-    app.listen(process.env.PORT || 5000);
-    console.log('Connected to mongoDB')
-  } catch (error) {
-    console.log(error)
-    process.exit(1)
-  }
-}
-
-connectDB();
-
-// const MONGO_URL = `mongodb://localhost:27017/product-management`;
-// mongoose.connect(process.env.MONGO_URL).then(() => {
+// const connectDB = async () => {
+//   try {
+//     await mongoose.connect(
+//       URL,
+//       { 
+//         useNewUrlParser: true,
+//         useUnifiedTopology: true
+//       }
+//     )
 //     app.listen(process.env.PORT || 5000);
-// }).then(() => {
-//     console.log('Connected to db!')
-// }).catch(err => {
-//     console.log(err);
-// });
+//     console.log('Connected to mongoDB')
+//   } catch (error) {
+//     console.log(error)
+//     process.exit(1)
+//   }
+// }
+
+// connectDB();
+
+const MONGO_URL = `mongodb://localhost:27017/product-management`;
+mongoose.set("strictQuery", false);
+mongoose.connect(MONGO_URL).then(() => {
+    app.listen(process.env.PORT || 5000);
+}).then(() => {
+    console.log('Connected to db!')
+}).catch(err => {
+    console.log(err);
+});
